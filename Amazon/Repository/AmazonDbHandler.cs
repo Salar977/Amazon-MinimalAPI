@@ -52,7 +52,7 @@ namespace Amazon.Repository
 			using MySqlConnection connection = new(_connectionString);
 			await connection.OpenAsync();
 
-			MySqlCommand cmd = new("SELECT FROM Books WHERE Id = @Id", connection);
+			MySqlCommand cmd = new("SELECT * FROM Books WHERE Id = @Id", connection);
 			cmd.Parameters.AddWithValue("@Id", id);
 
 			using var reader = await cmd.ExecuteReaderAsync();
