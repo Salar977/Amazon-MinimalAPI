@@ -7,7 +7,7 @@ namespace Amazon.Repository
 		Task<Books> AddBookAsync(Books book);
 		Task<Books?> UpdateBookAsync(int id, Books book);
 		Task<Books?> DeleteBookAsync(int id);
-		Task<Books?> GetBookByIdAsync(int id);
+		Task<Books?> GetBookByIdAsync(int? id);
 
 		Task<IEnumerable<Books>> GetBooksAsync();
 		Task<IEnumerable<Books>> GetBooksByTitleAsync(string? title);

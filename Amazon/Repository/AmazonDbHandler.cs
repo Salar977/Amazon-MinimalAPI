@@ -47,7 +47,7 @@ namespace Amazon.Repository
 			return bookList;
 		}
 
-		public async Task<Books?> GetBookByIdAsync(int id)
+		public async Task<Books?> GetBookByIdAsync(int? id)
 		{
 			using MySqlConnection connection = new(_connectionString);
 			await connection.OpenAsync();
