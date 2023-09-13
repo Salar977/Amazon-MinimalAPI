@@ -30,7 +30,6 @@ namespace Amazon.Endpoints
 		// https://localhost:4242/books
 		private static async Task<IActionResult> GetAllBooksAsync(
 			IAmazonRepository repo,
-			ILogger<Program> logger,
 			[FromQuery] string? title,
 			[FromQuery] string? author,
 			[FromQuery] int? publicationYear)

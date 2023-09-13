@@ -16,8 +16,8 @@ namespace Amazon.Repository
 		{
 			_connectionString = config.GetConnectionString("DefaultConnection");
 			_connectionString = _connectionString?
-				.Replace("{DB_USERNAME}", Environment.GetEnvironmentVariable("DB_USERNAME"))
-				.Replace("{DB_PASSWORD}", Environment.GetEnvironmentVariable("DB_PASSWORD"));
+				.Replace("{DB_AMAZON_USERNAME}", Environment.GetEnvironmentVariable("DB_AMAZON_USERNAME"))
+				.Replace("{DB_AMAZON_PASSWORD}", Environment.GetEnvironmentVariable("DB_AMAZON_PASSWORD"));
 
 			_logger = logger;
 		}
