@@ -32,7 +32,7 @@ if (app.Environment.IsDevelopment())
 var logger = (ILogger<Program>) app.Services.GetService(typeof(ILogger<Program>))!;
 // Middleware legges til i pipeline
 // min første middleware
-/*
+
 app.Use(async (context, next) =>
 {
 	try
@@ -57,7 +57,7 @@ app.Use(async (context, next) =>
 	}
 
 });
-*/
+
 
 app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
