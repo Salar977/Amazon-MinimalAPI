@@ -7,17 +7,23 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Middleware\**" />
+    <Compile Remove="Validation\**" />
+    <Content Remove="Middleware\**" />
+    <Content Remove="Validation\**" />
+    <EmbeddedResource Remove="Middleware\**" />
+    <EmbeddedResource Remove="Validation\**" />
+    <None Remove="Middleware\**" />
+    <None Remove="Validation\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.10" />
     <PackageReference Include="MySql.Data" Version="8.1.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Middleware\" />
-    <Folder Include="Validation\" />
   </ItemGroup>
 
 </Project>
