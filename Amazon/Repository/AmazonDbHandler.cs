@@ -1,4 +1,6 @@
 ﻿using Amazon.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using MySql.Data.MySqlClient;
 using System;
 using System.Data;
@@ -263,6 +265,48 @@ namespace Amazon.Repository
 			if (rofsAffected == 0) { return null; }
 
 			return bookToDelete;
+		}
+
+		public async Task<IActionResult> DeleteSeveralBooksAsync(int[] ids)
+		{
+			var booksToDelete = new List<Books>();
+
+			using MySqlConnection connection = new(_connectionString);
+			await connection.OpenAsync();
+
+			_logger.LogDebug($"Deleting books with IDs: {string.Join(", ", ids)}");
+
+			foreach (var id in ids)
+			{
+				var book = await GetBookByIdAsync(id);
+				if(book == null)
+				{
+					return new NotFoundObjectResult($"Book with {id} was not found");
+				}
+				booksToDelete.Add(book);
+			}
+
+			using var transaction = await connection.BeginTransactionAsync();
+
+			try
+			{
+				foreach(var book in booksToDelete)
+				{
+					await DeleteBookAsync(book.Id);
+				}
+
+				await transaction.CommitAsync();
+
+				_logger.LogDebug($"Deleted books with IDs: {string.Join(", ", ids)}");
+
+				return new OkObjectResult($"Deleted {booksToDelete.Count} book(s).");
+			}
+			catch (Exception ex)
+			{
+				await transaction.RollbackAsync();
+				_logger.LogError($"Error deleting books: {ex.Message}");
+				return new StatusCodeResult(500);
+			}
 		}
 	}
 }
