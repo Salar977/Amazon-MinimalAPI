@@ -1,4 +1,6 @@
 ﻿using Amazon.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using MySql.Data.MySqlClient;
 using System;
 using System.Data;
@@ -16,14 +18,16 @@ namespace Amazon.Repository
 		{
 			_connectionString = config.GetConnectionString("DefaultConnection");
 			_connectionString = _connectionString?
-				.Replace("{DB_USERNAME}", Environment.GetEnvironmentVariable("DB_USERNAME"))
-				.Replace("{DB_PASSWORD}", Environment.GetEnvironmentVariable("DB_PASSWORD"));
+				.Replace("{DB_AMAZON_USERNAME}", Environment.GetEnvironmentVariable("DB_AMAZON_USERNAME"))
+				.Replace("{DB_AMAZON_PASSWORD}", Environment.GetEnvironmentVariable("DB_AMAZON_PASSWORD"));
 
 			_logger = logger;
 		}
 
 		public async Task<IEnumerable<Books>> GetBooksAsync()
 		{
+			_logger.LogDebug("Get all books.");
+
 			var bookList = new List<Books>();
 			using MySqlConnection connection = new(_connectionString);
 			await connection.OpenAsync();
@@ -47,12 +51,14 @@ namespace Amazon.Repository
 			return bookList;
 		}
 
-		public async Task<Books?> GetBookByIdAsync(int? id)
+		public async Task<Books?> GetBookByIdAsync(int id)
 		{
+			_logger.LogDebug($"Get book by id: {id}");
+
 			using MySqlConnection connection = new(_connectionString);
 			await connection.OpenAsync();
 
-			MySqlCommand cmd = new("SELECT FROM Books WHERE Id = @Id", connection);
+			MySqlCommand cmd = new("SELECT * FROM Books WHERE Id = @Id", connection);
 			cmd.Parameters.AddWithValue("@Id", id);
 
 			using var reader = await cmd.ExecuteReaderAsync();
@@ -74,6 +80,8 @@ namespace Amazon.Repository
 
 		public async Task<IEnumerable<Books>> GetBooksByTitleAsync(string? title)
 		{
+			_logger.LogDebug($"Get book by title: {title}");
+
 			var bookByTitleList = new List<Books>();
 			using MySqlConnection connection = new(_connectionString);
 			await connection.OpenAsync();
@@ -101,6 +109,8 @@ namespace Amazon.Repository
 
 		public async Task<IEnumerable<Books>> GetBooksByAuthorAsync(string? author)
 		{
+			_logger.LogDebug($"Get book by author: {author}");
+
 			var bookByAuthorList = new List<Books>();
 			using MySqlConnection connection = new(_connectionString);
 			await connection.OpenAsync();
@@ -128,6 +138,8 @@ namespace Amazon.Repository
 
 		public async Task<IEnumerable<Books>> GetBooksByPublicationYearAsync(int? publicationYear)
 		{
+			_logger.LogDebug($"Get book by publication year: {publicationYear}");
+
 			var bookByPublicationYearList = new List<Books>();
 			using MySqlConnection connection = new(_connectionString);
 			await connection.OpenAsync();
@@ -156,7 +168,7 @@ namespace Amazon.Repository
 		public async Task<Books> AddBookAsync(Books book)
 		{
 
-			_logger?.LogDebug("La til ny bok: {@Book}", book);
+			_logger?.LogDebug("Added a new book: {@Book}", book);
 
 			// Exception handling, Logging
 			using MySqlConnection connection = new(_connectionString);
@@ -164,7 +176,7 @@ namespace Amazon.Repository
 
 			// lage query
 			MySqlCommand cmd = new("INSERT INTO Books (Title, Author, PublicationYear, ISBN, InStock) " +
-				"values (@Title, @Author, @PublicationYear, @ISBN, @InStock)", connection);
+				"VALUES (@Title, @Author, @PublicationYear, @ISBN, @InStock)", connection);
 
 			cmd.Parameters.AddWithValue("@Title", book.Title);
 			cmd.Parameters.AddWithValue("@Author", book.Author);
@@ -183,6 +195,8 @@ namespace Amazon.Repository
 
 		public async Task<Books?> UpdateBookAsync(int id, Books book)
 		{
+			_logger.LogDebug($"Updated book: {book}");
+
 			using MySqlConnection connection = new(_connectionString);
 			await connection.OpenAsync();
 
@@ -212,7 +226,7 @@ namespace Amazon.Repository
 				// gjør endringer i databasen
 				await mySqlTransaction.CommitAsync();
 
-				return (Books?)await GetBookByIdAsync(id);
+				return await GetBookByIdAsync(id);
 			}
 			catch (Exception ex)
 			{
@@ -235,6 +249,8 @@ namespace Amazon.Repository
 			// henter person fra db
 			var bookToDelete = await GetBookByIdAsync(id);
 
+			_logger.LogDebug($"Deleted book: {bookToDelete}");
+
 			if (bookToDelete == null) { return null; }
 
 			using MySqlConnection conn = new(_connectionString);
@@ -248,7 +264,49 @@ namespace Amazon.Repository
 
 			if (rofsAffected == 0) { return null; }
 
-			return (Books?)bookToDelete;
+			return bookToDelete;
+		}
+
+		public async Task<IActionResult> DeleteSeveralBooksAsync(int[] ids)
+		{
+			var booksToDelete = new List<Books>();
+
+			using MySqlConnection connection = new(_connectionString);
+			await connection.OpenAsync();
+
+			_logger.LogDebug($"Deleting books with IDs: {string.Join(", ", ids)}");
+
+			foreach (var id in ids)
+			{
+				var book = await GetBookByIdAsync(id);
+				if(book == null)
+				{
+					return new NotFoundObjectResult($"Book with {id} was not found");
+				}
+				booksToDelete.Add(book);
+			}
+
+			using var transaction = await connection.BeginTransactionAsync();
+
+			try
+			{
+				foreach(var book in booksToDelete)
+				{
+					await DeleteBookAsync(book.Id);
+				}
+
+				await transaction.CommitAsync();
+
+				_logger.LogDebug($"Deleted books with IDs: {string.Join(", ", ids)}");
+
+				return new OkObjectResult($"Deleted {booksToDelete.Count} book(s).");
+			}
+			catch (Exception ex)
+			{
+				await transaction.RollbackAsync();
+				_logger.LogError($"Error deleting books: {ex.Message}");
+				return new StatusCodeResult(500);
+			}
 		}
 	}
 }

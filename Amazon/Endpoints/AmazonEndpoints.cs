@@ -15,6 +15,7 @@ namespace Amazon.Endpoints
 			app.MapPost("/books", AddBookAsync).WithOpenApi().WithName("AddBookAsync");
 			app.MapDelete("/books{id}", DeleteBookAsync).WithOpenApi().WithName("DeleteBookAsync");
 			app.MapPut("/books{id}", UpdateBookAsync).WithOpenApi().WithName("UpdateBookAsync");
+			app.MapPost("/books/delete", DeleteSeveralBooksAsync).WithOpenApi().WithName("DeleteSeveralBooksAsync");
 		}
 
 		private static async Task<IActionResult> AddBookAsync(IAmazonRepository repo, Books book)
@@ -30,7 +31,6 @@ namespace Amazon.Endpoints
 		// https://localhost:4242/books
 		private static async Task<IActionResult> GetAllBooksAsync(
 			IAmazonRepository repo,
-			ILogger<Program> logger,
 			[FromQuery] string? title,
 			[FromQuery] string? author,
 			[FromQuery] int? publicationYear)
@@ -91,6 +91,14 @@ namespace Amazon.Endpoints
 			if (bookToDelete != null) { return new OkObjectResult(bookToDelete); }
 
 			return new NotFoundObjectResult(bookToDelete);
+		}
+
+		private static async Task<IActionResult> DeleteSeveralBooksAsync(IAmazonRepository repo, [FromQuery] int[] ids)
+		{
+			var booksToDelete = await repo.DeleteSeveralBooksAsync(ids);
+			if (booksToDelete != null) { return new OkObjectResult(booksToDelete); }
+
+			return new NotFoundObjectResult(booksToDelete);
 		}
 
 		private static async Task<IActionResult> UpdateBookAsync(IAmazonRepository repo, int id, Books book)
