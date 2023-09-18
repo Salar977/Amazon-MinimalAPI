@@ -267,6 +267,7 @@ namespace Amazon.Repository
 			return bookToDelete;
 		}
 
+		/*
 		public async Task<IActionResult> DeleteSeveralBooksAsync(int[] ids)
 		{
 			var booksToDelete = new List<Books>();
@@ -308,5 +309,6 @@ namespace Amazon.Repository
 				return new StatusCodeResult(500);
 			}
 		}
+		*/
 	}
 }
