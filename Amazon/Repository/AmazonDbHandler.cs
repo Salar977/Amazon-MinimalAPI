@@ -1,8 +1,5 @@
 ﻿using Amazon.Models;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
 using MySql.Data.MySqlClient;
-using System;
 using System.Data;
 
 namespace Amazon.Repository
@@ -213,7 +210,7 @@ namespace Amazon.Repository
 				"WHERE Id=@Id", connection);
 
 				cmd.Parameters.AddWithValue("@Title", book.Title);
-				cmd.Parameters.AddWithValue("@LastName", book.Author);
+				cmd.Parameters.AddWithValue("@Author", book.Author);
 				cmd.Parameters.AddWithValue("@PublicationYear", book.PublicationYear);
 				cmd.Parameters.AddWithValue("@ISBN", book.ISBN);
 				cmd.Parameters.AddWithValue("@InStock", book.InStock);
@@ -221,7 +218,11 @@ namespace Amazon.Repository
 
 				var rowsAffected = await cmd.ExecuteNonQueryAsync();
 
-				if (rowsAffected == 0) { return null; }
+				if (rowsAffected == 0)
+				{
+					await mySqlTransaction.RollbackAsync();
+					return null;
+				}
 
 				// gjør endringer i databasen
 				await mySqlTransaction.CommitAsync();
