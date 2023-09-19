@@ -7,14 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Middleware\**" />
-    <Compile Remove="Validation\**" />
-    <Content Remove="Middleware\**" />
-    <Content Remove="Validation\**" />
-    <EmbeddedResource Remove="Middleware\**" />
-    <EmbeddedResource Remove="Validation\**" />
-    <None Remove="Middleware\**" />
-    <None Remove="Validation\**" />
+    <Folder Include="NewFolder\" />
   </ItemGroup>
 
   <ItemGroup>

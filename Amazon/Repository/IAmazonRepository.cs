@@ -14,6 +14,5 @@ namespace Amazon.Repository
 		Task<IEnumerable<Books>> GetBooksByTitleAsync(string? title);
 		Task<IEnumerable<Books>> GetBooksByAuthorAsync(string? author);
 		Task<IEnumerable<Books>> GetBooksByPublicationYearAsync(int? year);
-		// Task<IActionResult> DeleteSeveralBooksAsync(int[] ids);
 	}
 }

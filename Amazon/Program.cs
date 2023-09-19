@@ -1,4 +1,5 @@
 using Amazon.Endpoints;
+using Amazon.Middleware;
 using Amazon.Repository;
 using Serilog;
 
@@ -10,11 +11,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IAmazonRepository, AmazonDbHandler>();
+builder.Services.AddTransient<GlobalExceptionMiddleware>();
 
 // Built-in Logger
 // builder.Logging.AddConsole();
 
-// Serilog Logger
+// viktig!!! Serilog Logger configuration
 builder.Host.UseSerilog((context, configuration) =>
 {
 	configuration.ReadFrom.Configuration(context.Configuration);
@@ -29,36 +31,7 @@ if (app.Environment.IsDevelopment())
 	app.UseSwaggerUI();
 }
 
-var logger = (ILogger<Program>) app.Services.GetService(typeof(ILogger<Program>))!;
-// Middleware legges til i pipeline
-// min første middleware
-
-app.Use(async (context, next) =>
-{
-	try
-	{
-		await next(context);
-	}
-	catch (Exception e)
-	{
-		logger.LogError(e, "Noe gikk galt - test exception {@Machine} {@TraceId}",
-			Environment.MachineName,
-			System.Diagnostics.Activity.Current?.Id
-			);
-
-		await Results.Problem(
-			title: "Noe fryktelig har skjedd",
-			statusCode: StatusCodes.Status500InternalServerError,
-			extensions: new Dictionary<string, object?>
-			{
-				{ "traceId", System.Diagnostics.Activity.Current?.Id }
-			}
-			).ExecuteAsync(context);
-	}
-
-});
-
-
+app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
 

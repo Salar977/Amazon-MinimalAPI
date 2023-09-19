@@ -1,8 +1,6 @@
 ﻿using Amazon.Models;
 using Amazon.Repository;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Amazon.Endpoints
 {
@@ -92,15 +90,6 @@ namespace Amazon.Endpoints
 
 			return new NotFoundObjectResult(bookToDelete);
 		}
-		/*
-		private static async Task<IActionResult> DeleteSeveralBooksAsync(IAmazonRepository repo, [FromQuery] int[] ids)
-		{
-			var booksToDelete = await repo.DeleteSeveralBooksAsync(ids);
-			if (booksToDelete != null) { return new OkObjectResult(booksToDelete); }
-
-			return new NotFoundObjectResult(booksToDelete);
-		}
-		*/
 
 		private static async Task<IActionResult> UpdateBookAsync(IAmazonRepository repo, int id, Books book)
 		{
