@@ -1,5 +1,6 @@
 ﻿using Amazon.Models;
 using Amazon.Repository;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Amazon.Endpoints
@@ -13,21 +14,20 @@ namespace Amazon.Endpoints
 			app.MapPost("/books", AddBookAsync).WithOpenApi().WithName("AddBookAsync");
 			app.MapDelete("/books/{id}", DeleteBookAsync).WithOpenApi().WithName("DeleteBookAsync");
 			app.MapPut("/books/{id}", UpdateBookAsync).WithOpenApi().WithName("UpdateBookAsync");
-			// app.MapPost("/books/delete", DeleteSeveralBooksAsync).WithOpenApi().WithName("DeleteSeveralBooksAsync");
 		}
 
-		private static async Task<IActionResult> AddBookAsync(IAmazonRepository repo, Books book)
+		private static async Task<IResult> AddBookAsync(IAmazonRepository repo, Books book)
 		{
 			if(book != null)
 			{
 				var addedBook = await repo.AddBookAsync(book);
-				if (addedBook != null) { return new OkObjectResult(addedBook); }
+				if (addedBook != null) { return Results.Ok(addedBook); }
 			}
-			return new NotFoundObjectResult(book);
+			return Results.NotFound();
 		}
 
 		// https://localhost:4242/books
-		private static async Task<IActionResult> GetAllBooksAsync(
+		private static async Task<IResult> GetAllBooksAsync(
 			IAmazonRepository repo,
 			[FromQuery] string? title,
 			[FromQuery] string? author,
@@ -40,7 +40,7 @@ namespace Amazon.Endpoints
 
 				if (getBooksByTitle != null)
 				{
-					return new OkObjectResult(getBooksByTitle);
+					return Results.Ok(getBooksByTitle);
 				}
 			}
 
@@ -50,7 +50,7 @@ namespace Amazon.Endpoints
 
 				if (getBooksByAuthor != null)
 				{
-					return new OkObjectResult(getBooksByAuthor);
+					return Results.Ok(getBooksByAuthor);
 				}
 			}
 
@@ -60,7 +60,7 @@ namespace Amazon.Endpoints
 
 				if (getBookByPublicationYear != null)
 				{
-					return new OkObjectResult(getBookByPublicationYear);
+					return Results.Ok(getBookByPublicationYear);
 				}
 			}
 			
@@ -70,35 +70,35 @@ namespace Amazon.Endpoints
 			if(allBooks != null)
 			{
 
-				return new OkObjectResult(allBooks);
+				return Results.Ok(allBooks);
 			}
-			return new NotFoundObjectResult(allBooks);
+			return Results.NotFound(allBooks);
 		}
 
-		private static async Task<IActionResult> GetBookByIdAsync(IAmazonRepository repo, int id)
+		private static async Task<IResult> GetBookByIdAsync(IAmazonRepository repo, int id)
 		{
 			var bookById = await repo.GetBookByIdAsync(id);
-			if(bookById != null) { return new OkObjectResult(bookById); }
+			if(bookById != null) { return Results.Ok(bookById); }
 
-			return new NotFoundObjectResult(bookById);
+			return Results.NotFound(bookById);
 		}
 
-		private static async Task<IActionResult> DeleteBookAsync(IAmazonRepository repo, int id)
+		private static async Task<IResult> DeleteBookAsync(IAmazonRepository repo, int id)
 		{
 			var bookToDelete = await repo.DeleteBookAsync(id);
-			if (bookToDelete != null) { return new OkObjectResult(bookToDelete); }
+			if (bookToDelete != null) { return Results.Ok(bookToDelete); }
 
-			return new NotFoundObjectResult(bookToDelete);
+			return Results.NotFound(bookToDelete);
 		}
 
-		private static async Task<IActionResult> UpdateBookAsync(IAmazonRepository repo, int id, Books book)
+		private static async Task<IResult> UpdateBookAsync(IAmazonRepository repo, int id, Books book)
 		{
 			if(book != null)
 			{
 				var personToUpdate = await repo.UpdateBookAsync(id, book);
-				if(personToUpdate != null) { return new OkObjectResult(personToUpdate); }
+				if(personToUpdate != null) { return Results.Ok(personToUpdate); }
 			}
-			return new NotFoundObjectResult(book);
+			return Results.NotFound(book);
 		}
 	}
 }
