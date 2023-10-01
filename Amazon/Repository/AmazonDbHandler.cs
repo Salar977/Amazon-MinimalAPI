@@ -47,34 +47,6 @@ namespace Amazon.Repository
 			}
 			return bookList;
 		}
-
-		public async Task<Books?> GetBookByIdAsync(int id)
-		{
-			_logger.LogDebug($"Get book by id: {id}");
-
-			using MySqlConnection connection = new(_connectionString);
-			await connection.OpenAsync();
-
-			MySqlCommand cmd = new("SELECT * FROM Books WHERE Id = @Id", connection);
-			cmd.Parameters.AddWithValue("@Id", id);
-
-			using var reader = await cmd.ExecuteReaderAsync();
-
-			while (await reader.ReadAsync())
-			{
-				return new Books
-				{
-					Id = reader.GetInt32("Id"),
-					Title = reader.GetString("Title"),
-					Author = reader.GetString("Author"),
-					PublicationYear = reader.GetInt32("PublicationYear"),
-					ISBN = reader.GetString("ISBN"),
-					InStock = reader.GetInt32("InStock")
-				};
-			}
-			return null;
-		}
-
 		public async Task<IEnumerable<Books>> GetBooksByTitleAsync(string? title)
 		{
 			_logger.LogDebug($"Get book by title: {title}");
@@ -103,7 +75,6 @@ namespace Amazon.Repository
 			}
 			return bookByTitleList;
 		}
-
 		public async Task<IEnumerable<Books>> GetBooksByAuthorAsync(string? author)
 		{
 			_logger.LogDebug($"Get book by author: {author}");
@@ -132,7 +103,6 @@ namespace Amazon.Repository
 			}
 			return bookByAuthorList;
 		}
-
 		public async Task<IEnumerable<Books>> GetBooksByPublicationYearAsync(int? publicationYear)
 		{
 			_logger.LogDebug($"Get book by publication year: {publicationYear}");
@@ -160,6 +130,33 @@ namespace Amazon.Repository
 				bookByPublicationYearList.Add(bookByPublicationYear);
 			}
 			return bookByPublicationYearList;
+		}
+
+		public async Task<Books?> GetBookByIdAsync(int id)
+		{
+			_logger.LogDebug($"Get book by id: {id}");
+
+			using MySqlConnection connection = new(_connectionString);
+			await connection.OpenAsync();
+
+			MySqlCommand cmd = new("SELECT * FROM Books WHERE Id = @Id", connection);
+			cmd.Parameters.AddWithValue("@Id", id);
+
+			using var reader = await cmd.ExecuteReaderAsync();
+
+			while (await reader.ReadAsync())
+			{
+				return new Books
+				{
+					Id = reader.GetInt32("Id"),
+					Title = reader.GetString("Title"),
+					Author = reader.GetString("Author"),
+					PublicationYear = reader.GetInt32("PublicationYear"),
+					ISBN = reader.GetString("ISBN"),
+					InStock = reader.GetInt32("InStock")
+				};
+			}
+			return null;
 		}
 
 		public async Task<Books> AddBookAsync(Books book)
