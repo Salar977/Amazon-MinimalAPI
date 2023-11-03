@@ -34,13 +34,15 @@ namespace Amazon.Endpoints
 			[FromQuery] int? publicationYear)
 		{
 
+			IEnumerable<Books> books = await repo.GetBooksAsync();
+
 			if(title != null)
 			{
 				var getBooksByTitle = await repo.GetBooksByTitleAsync(title);
 
 				if (getBooksByTitle != null)
 				{
-					return Results.Ok(getBooksByTitle);
+					books = books.Intersect(getBooksByTitle);
 				}
 			}
 
@@ -50,8 +52,8 @@ namespace Amazon.Endpoints
 
 				if (getBooksByAuthor != null)
 				{
-					return Results.Ok(getBooksByAuthor);
-				}
+                    books = books.Intersect(getBooksByAuthor);
+                }
 			}
 
 			if (publicationYear != null)
@@ -60,19 +62,17 @@ namespace Amazon.Endpoints
 
 				if (getBookByPublicationYear != null)
 				{
-					return Results.Ok(getBookByPublicationYear);
-				}
+                    books = books.Intersect(getBookByPublicationYear);
+                }
 			}
-			
 
-
-			var allBooks = await repo.GetBooksAsync();
-			if(allBooks != null)
+			if(books.Any())
 			{
 
-				return Results.Ok(allBooks);
+				return Results.Ok(books);
 			}
-			return Results.NotFound(allBooks);
+
+			return Results.NotFound(books);
 		}
 
 		private static async Task<IResult> GetBookByIdAsync(IAmazonRepository repo, int id)
